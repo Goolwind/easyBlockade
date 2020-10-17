@@ -223,23 +223,32 @@ int main()
 {
 	int sx, sy;
 	char cmd = 'a';
+	int DyMsg;
 	Level1 map;
 	SnakeNode Snake(10, 20, 1);
-	Snake.make(4);
+	Snake.make(10);
 	food fd;
 	fd.setPosition();
 	poison psn;
 	psn.setPosition();
 	mine mn;
 	mn.setPosition();
-	map.setMap(&Snake, &fd, &mn, &psn);
 	time_t start = clock();
 	while (clock() - start < 100000) {
+		map.setMap(&Snake, &fd, &mn, &psn);
 		paint(&map);
-		while (clock() - start < 350) {
-			if (_kbhit())cmd = _getch();
+		while (clock() - start < 100) {
+			if (_kbhit()){
+				char tcmd = cmd;
+				cmd = _getch();
+				if ((cmd == 'w' and tcmd == 's') or (cmd == 's' and tcmd == 'w') or (cmd == 'a' and tcmd == 'd') or (cmd == 'd' and tcmd == 'a'))cmd = tcmd;
+				if (cmd != 'w' and cmd != 's' and cmd != 'a' and cmd != 'd') {
+					cout << "Enter any direction command to continue..." << endl;
+					cout << "If you still enter an un-directing command, the game will over.";
+					cmd = _getch();
+				}
+			}
 		}
-
 		Snake.move(cmd);
 		sx = Snake.sx();
 		sy = Snake.sy();
@@ -247,25 +256,41 @@ int main()
 		while (temp != nullptr) {
 			if (sx == temp->sx() and sy == temp->sy() and temp->sNo() != 1) {
 				isAlive = false;
+				DyMsg = 0;
 				break;
 			}
 			temp = temp->showNext();
 		}
-		if (!isAlive)break;
-		if (map.map[sx][sy] == WALL)break;
+		if (map.map[sx][sy] == WALL) {
+			DyMsg = 1;
+			isAlive = false;
+		}
 		else if (map.map[sx][sy] == FOOD) {
 			fd.beEatenBy(&Snake);
 			fd.setPosition();
 			cmd = cmd;
 		}
 		else if (map.map[sx][sy] == MINE) {
-			if (!mn.beEatenBy(&Snake))break;
+			if (!mn.beEatenBy(&Snake)) {
+				DyMsg = 2;
+				isAlive = false;
+			}
 			mn.setPosition();
 		}
+		if (!isAlive)break;
 		system("cls");
-		map.setMap(&Snake, &fd, &mn, &psn);
 		start = clock();
-
 	}
-	cout << "Game Over.";
+	cout << "Game Over." << endl;
+	switch (DyMsg) {
+	case 0:
+		cout << "Self-killed";
+		break;
+	case 1:
+		cout << "Hit Wall";
+		break;
+	case 2:
+		cout << "Be Bombed";
+		break;
+	}
 }

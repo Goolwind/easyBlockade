@@ -33,6 +33,7 @@ class poison :public item {
 private:
 	poison *nextPsn = nullptr;
 public:
+	int count = 1;
 	bool isShown = true;
 	bool beEatenBy(SnakeNode *Snake) {
 		poison *temp = this;
@@ -47,6 +48,7 @@ public:
 		return Snake->eatPoison();
 	}
 	void createNext(int nums) {
+		count += nums;
 		nextPsn = new poison;
 		nextPsn->setPosition();
 		nums--;
